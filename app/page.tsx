@@ -21,6 +21,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [download, setDownload] = useState<string | null>(null);
   const [confirmSample, setConfirmSample] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(() => new Set());
   const downloadRef = useRef<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const parsed = useMemo(() => {
@@ -30,6 +31,20 @@ export default function Home() {
       return { value: null, error: cause instanceof Error ? cause.message : "Check your rubric format." };
     }
   }, [rubric]);
+  const anchorKeys = parsed.value?.components.flatMap((component, index) =>
+    component.ranges.length ? component.items.map((_, itemIndex) => `${index}-${itemIndex}`) : []
+  ) ?? [];
+  const allExpanded = anchorKeys.length > 0 && anchorKeys.every((key) => expandedItems.has(key));
+
+  function setItemExpanded(key: string, open: boolean) {
+    setExpandedItems((current) => {
+      if (current.has(key) === open) return current;
+      const next = new Set(current);
+      if (open) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+  }
 
   useEffect(() => () => {
     if (downloadRef.current) URL.revokeObjectURL(downloadRef.current);
@@ -76,6 +91,7 @@ export default function Home() {
       return;
     }
     setRubric(SAMPLE);
+    setExpandedItems(new Set());
     setDownload(null);
     setConfirmSample(false);
     setError("");
@@ -131,7 +147,7 @@ export default function Home() {
                 name="rubric"
                 wrap="off"
                 value={rubric}
-                onChange={(event) => { setRubric(event.target.value); setConfirmSample(false); setError(""); setDownload(null); }}
+                onChange={(event) => { setRubric(event.target.value); setExpandedItems(new Set()); setConfirmSample(false); setError(""); setDownload(null); }}
                 onKeyDown={(event) => {
                   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
                     event.preventDefault();
@@ -154,16 +170,22 @@ export default function Home() {
             </section>
 
             <aside className="rubric-preview" aria-labelledby="preview-heading">
-              <div className="section-heading"><h2 id="preview-heading">Rubric preview</h2><span className="live-label">Live</span></div>
+              <div className="section-heading"><h2 id="preview-heading">Rubric preview</h2>
+                {anchorKeys.length > 0 ? <button type="button" className="text-button anchor-toggle-all" aria-controls="preview-components" aria-expanded={allExpanded}
+                  onClick={() => setExpandedItems(allExpanded ? new Set() : new Set(anchorKeys))}>
+                  {allExpanded ? "Collapse all" : "Expand all"}
+                </button> : <span className="live-label">Live</span>}
+              </div>
               {parsed.value ? (
                 <>
-                  <div className="preview-components">
+                  <div className="preview-components" id="preview-components">
                     {parsed.value.components.map((component, index) => (
                       <div className="preview-component" key={index}>
                         <div className="component-title"><h3>{component.name}</h3><span>{component.marks}<small>marks</small></span></div>
                         <ul>
                           {component.items.map((item, itemIndex) => <li key={itemIndex}>
-                            {component.ranges.length > 0 ? <details className="anchor-details">
+                            {component.ranges.length > 0 ? <details className="anchor-details" open={expandedItems.has(`${index}-${itemIndex}`)}
+                              onToggle={(event) => setItemExpanded(`${index}-${itemIndex}`, event.currentTarget.open)}>
                               <summary><span className="item-name">{item.name}</span><span className="item-weight">{item.weight}<small> wt</small></span></summary>
                               <dl className="item-anchors">{component.ranges.map((range, rangeIndex) => <div key={rangeIndex}>
                                 <dt>{range.label}</dt><dd>{item.anchors[rangeIndex]}</dd>

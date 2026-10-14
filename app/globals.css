@@ -130,6 +130,7 @@ textarea[readonly] { background: #f7f8f4; }
 @media (max-width: 700px) { .sheet-examples { grid-template-columns: 1fr; gap: 24px; } }
 @media (max-width: 640px) { textarea { font-size: 16px; } }
 .anchor-details { font-size: 12px; }
+.anchor-toggle-all { flex-shrink: 0; font-size: 12px; }
 .anchor-details summary { display: flex; align-items: baseline; gap: 7px; padding: 5px 0; color: var(--muted); cursor: pointer; list-style: none; }
 .anchor-details summary::-webkit-details-marker { display: none; }
 .anchor-details summary::before { content: ""; width: 6px; height: 6px; flex-shrink: 0; border-right: 1.5px solid var(--teal); border-bottom: 1.5px solid var(--teal); transform: rotate(-45deg); align-self: center; }
