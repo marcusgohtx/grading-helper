@@ -98,7 +98,7 @@ export default function Home() {
       <main id="main-content">
         <div className="page-intro">
           <h1>Create your grading workbook.</h1>
-          <p>Write your rubric below. Download an Excel workbook with formulas ready for 100 students.</p>
+          <p>Your rubric, ready to grade in Excel.</p>
         </div>
 
         <form onSubmit={(event) => { event.preventDefault(); void submit(); }} aria-busy={loading}>
@@ -121,10 +121,10 @@ export default function Home() {
                 </div>
               )}
 
-              <p className="format-help" id="format-help">A component and its marks on one line. Indent each sub-item with two spaces, then add its relative weight.</p>
+              <p className="format-help" id="format-help">Add marks to components. Indent sub-items with two spaces and add a weight.</p>
               <div className="syntax-guide" id="syntax-guide">
                 <code>Component | 40 marks<br />&nbsp;&nbsp;Sub-item | 1</code>
-                <span>Use <code>|</code> to separate values.</span>
+                <span>Separate values with <code>|</code></span>
               </div>
               <textarea
                 ref={textareaRef}
@@ -147,8 +147,7 @@ export default function Home() {
                 placeholder={"Research | 40 marks\n  Evidence | 1\n  Analysis | 2"}
               />
               <div className="editor-footnote" id="rubric-help">
-                <span>Two levels only. Blank lines are fine.</span>
-                <span>Weights are relative within each component.</span>
+                <span>Weights are relative, so 2 counts twice as much as 1.</span>
               </div>
               {parsed.error && <p className="validation-error" id="rubric-error" role="status">{parsed.error}</p>}
             </section>
@@ -170,27 +169,56 @@ export default function Home() {
                   <div className="preview-total"><span>Total available</span><strong>{parsed.value.totalMarks}<small> marks</small></strong></div>
                   <p className="preview-count">{parsed.value.components.length} components · {parsed.value.itemCount} sub-items</p>
                 </>
-              ) : <p className="preview-empty">Your rubric preview will appear here when the format is valid.</p>}
-              <p className="score-note">In Excel, enter a score from 0 to 100 for each sub-item. Weighted scores calculate each component&apos;s marks and the overall total.</p>
+              ) : <p className="preview-empty">Follow the format to see your preview.</p>}
+              <p className="score-note">Grade each sub-item from 0 to 100. Excel calculates the totals.</p>
             </aside>
           </div>
 
-          <div className="workbook-details">
-            <h2>Your workbook includes</h2>
-            <p><strong>Students</strong> for your roster. <strong>Grading</strong> with students across columns, criteria down rows, and formulas for totals.</p>
-            <p className="privacy-note">Only your rubric is sent to create the file. Add student names and scores in Excel.</p>
-          </div>
+          <section className="workbook-guide" aria-labelledby="workbook-heading">
+            <div className="guide-heading"><h2 id="workbook-heading">Inside your workbook</h2><span>Example</span></div>
+            <div className="sheet-examples">
+              <figure>
+                <figcaption><h3>1. Add students</h3><p>Enter names on the Students sheet.</p></figcaption>
+                <div className="sheet-window">
+                  <table className="sheet-table roster-example" aria-label="Example Students sheet">
+                    <thead><tr><th scope="col">No.</th><th scope="col">Student name</th><th scope="col">Student ID</th></tr></thead>
+                    <tbody>
+                      <tr><td>1</td><td>Alex</td><td>001</td></tr>
+                      <tr><td>2</td><td>Taylor</td><td>002</td></tr>
+                      <tr><td>3</td><td></td><td></td></tr>
+                    </tbody>
+                  </table>
+                  <div className="sheet-tabs"><span className="selected-tab">Students</span><span>Grading</span></div>
+                </div>
+              </figure>
+              <figure>
+                <figcaption><h3>2. Enter grades</h3><p>Score sub-items. Green cells calculate automatically.</p></figcaption>
+                <div className="sheet-window">
+                  <table className="sheet-table grading-example" aria-label="Example Grading sheet for a 40-mark component">
+                    <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col" className="formula-cell">Alex</th><th scope="col" className="formula-cell">Taylor</th></tr></thead>
+                    <tbody>
+                      <tr className="example-component"><th scope="row">Research <small>40 marks</small></th><td></td><td></td><td></td></tr>
+                      <tr><th scope="row">Evidence</th><td>1</td><td>80</td><td>70</td></tr>
+                      <tr><th scope="row">Analysis</th><td>2</td><td>90</td><td>80</td></tr>
+                      <tr className="example-total"><th scope="row">Research total</th><td></td><td className="formula-cell">34.67</td><td className="formula-cell">30.67</td></tr>
+                    </tbody>
+                  </table>
+                  <div className="sheet-tabs"><span>Students</span><span className="selected-tab">Grading</span></div>
+                </div>
+              </figure>
+            </div>
+            <p className="privacy-note">Student names and grades stay in your Excel file.</p>
+          </section>
 
           <div className="submit-area">
             <div className="file-detail"><span className="file-type">XLSX</span><span>2 sheets<span className="detail-dot">·</span>100 students</span></div>
             <button type="submit" className="submit-button" disabled={loading || !parsed.value}>
-              {loading ? <><span className="spinner" aria-hidden="true" />Creating workbook...</> : <>Submit <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M4 14v3h12v-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></>}
+              {loading ? <><span className="spinner" aria-hidden="true" />Creating Excel...</> : <>Download Excel <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M4 14v3h12v-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></>}
             </button>
           </div>
           <div className="submission-status" aria-live="polite" aria-atomic="true">
-            {loading && <p>Creating your Excel workbook...</p>}
             {!loading && error && <p className="validation-error" role="alert">{error}</p>}
-            {!loading && !error && download && <p className="download-success">Your workbook is ready. <a href={download} download="grading-workbook.xlsx">Download it again</a> if the download did not start.</p>}
+            {!loading && !error && download && <p className="download-success">Excel ready. <a href={download} download="grading-workbook.xlsx">Download again</a></p>}
           </div>
         </form>
       </main>
