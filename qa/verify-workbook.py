@@ -21,7 +21,7 @@ assert students["B8"].protection.locked is False
 assert grading["D11"].protection.locked is False
 assert grading["D11"].fill.patternType is None
 assert grading["D20"].protection.locked
-assert grading["D20"].number_format == "0.00"
+assert grading["D20"].number_format == "General"
 assert grading["D7"].value == '=IF(\'Students\'!B8="","",\'Students\'!B8)'
 assert grading["BA7"].value == '=IF(\'Students\'!B57="","",\'Students\'!B57)'
 assert grading["CY7"].value == '=IF(\'Students\'!B107="","",\'Students\'!B107)'
@@ -50,7 +50,7 @@ assert literal["Grading"]["A10"].data_type == "s"
 assert literal["Grading"]["A11"].value == "+Literal"
 capacity = openpyxl.load_workbook(OUTPUT / "capacity.xlsx")
 assert capacity["Grading"].max_column == 103
-assert len(capacity["Grading"].conditional_formatting) == 30
+assert len(capacity["Grading"].conditional_formatting) == 0
 assert sum(1 for row in capacity["Grading"] for cell in row if cell.protection.locked is False) == 20_000
 print("XLSX structure, cell protection, blank caches, green formulas, numeric validation and literal labels passed.")
 

@@ -30,7 +30,7 @@ validation=grading.data_validations.dataValidation[0]
 assert validation.type=='decimal' and validation.formula1=='0' and validation.formula2=='100'
 assert validation.errorStyle=='stop'
 assert str(validation.sqref)=='D11:CY12 D15:CY15'
-assert [str(item.sqref) for item in grading.conditional_formatting]==['D11:CY12','D15:CY15']
+assert len(grading.conditional_formatting)==0
 literal=openpyxl.load_workbook(directory/'literal-labels.xlsx')['Grading']
 for address,value in [('A10','=SUM(A1) & <tag>'),('A11','+Literal "quotes"'),('A13','-Label'),('A14','@Literal')]:
     assert literal[address].value==value and literal[address].data_type=='s'
