@@ -12,7 +12,7 @@ Lecturers enter categories, weighted sub-items and scoring anchors in a single t
 
 ## Workflow
 
-Unindented categories specify maximum marks and score ranges. Indented sub-items specify weights and matching anchor labels. Labels match ranges by position; commas are ordinary text and pipes separate fields. Download Excel runs a backend generator. Students holds the roster. Grading lists criteria and anchors vertically, with students horizontally and totals at the bottom.
+Unindented categories specify maximum marks and score ranges. Indented sub-items specify weights and matching anchor labels. Labels match ranges by position; commas are ordinary text and pipes separate fields. Download Excel runs a backend generator. Students holds the roster. Grading lists criteria vertically, anchors horizontally on each sub-item row, then student score columns. Category rows show anchor ranges. Anchor cells are protected reference text; totals are at the bottom.
 
 ## Scoring
 

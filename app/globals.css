@@ -117,9 +117,13 @@ textarea[readonly] { background: #f7f8f4; }
 .sheet-table tbody th { font-weight: 400; }
 .roster-example th:first-child { width: 16%; }
 .roster-example th:nth-child(2) { width: 49%; }
-.grading-example th:first-child { width: 41%; }
-.grading-example th:nth-child(2) { width: 19%; }
-.grading-example th:nth-child(3), .grading-example th:nth-child(4) { width: 20%; }
+.grading-window { overflow-x: auto; }
+.grading-window:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+.grading-example { width: 880px; }
+.grading-example th:first-child { width: 100px; }
+.grading-example th:nth-child(2), .grading-example th:nth-child(3) { width: 60px; }
+.grading-example th:nth-child(n+4) { width: 130px; }
+.grading-example th:nth-child(n+8) { width: 70px; }
 .sheet-table .formula-cell { background: #e2f0d9; }
 .sheet-table .example-component th, .sheet-table .example-total th { font-weight: 650; }
 .example-component small { font-size: 10px; font-weight: 400; color: var(--muted); display: block; }
@@ -142,5 +146,4 @@ textarea[readonly] { background: #f7f8f4; }
 .item-anchors > div { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 8px; margin-top: 5px; }
 .item-anchors dt { font-variant-numeric: tabular-nums; }
 .item-anchors dd { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
-.sheet-table .anchor-example td { color: var(--muted); font-size: 11px; height: auto; padding: 5px 9px; }
 .syntax-guide code { overflow-wrap: anywhere; }

@@ -25,7 +25,7 @@ For Research out of 40, scores 32 and 36 with weights 1 and 2 give 34.6666667 ou
 
 ## Workbook
 
-Students contains up to 100 names and optional IDs. Grading has students across columns and criteria down rows, with anchor descriptions beneath their sub-items and totals at the bottom. Totals stay blank until all required inputs are valid. Do not reorder names after grading begins.
+Students contains up to 100 names and optional IDs. Grading has criteria down rows and anchors across columns beside each sub-item. Component rows show the matching ranges. Student score columns follow the anchors; only those score cells are editable. The widest category determines the number of anchor columns. Totals stay at the bottom and remain blank until all required inputs are valid. Do not reorder names after grading begins. The first three columns stay frozen while anchors and students scroll horizontally.
 
 Use default row heights and column widths, 11-point text, bold headers and green formula cells. No merged cells, borders, wrapping or other display styling. Users may resize rows and columns. Formula cells stay protected. IDs use text input formatting to retain leading zeros.
 

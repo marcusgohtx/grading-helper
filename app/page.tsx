@@ -222,19 +222,15 @@ export default function Home() {
                 </div>
               </figure>
               <figure>
-                <figcaption><h3>2. Enter grades</h3><p>Use the anchors below each sub-item. Green cells calculate totals.</p></figcaption>
-                <div className="sheet-window">
+                <figcaption><h3>2. Enter grades</h3><p>Anchors sit beside each sub-item. Scroll right for student scores.</p></figcaption>
+                <div className="sheet-window grading-window" tabIndex={0} role="region" aria-label="Grading example, scroll horizontally to see student scores">
                   <table className="sheet-table grading-example" aria-label="Example Grading sheet for a 40-mark component">
-                    <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col" className="formula-cell">Alex</th><th scope="col" className="formula-cell">Taylor</th></tr></thead>
+                    <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col">Marks</th><th scope="col">Anchor 1</th><th scope="col">Anchor 2</th><th scope="col">Anchor 3</th><th scope="col">Anchor 4</th><th scope="col" className="formula-cell">Alex</th><th scope="col" className="formula-cell">Taylor</th></tr></thead>
                     <tbody>
-                      <tr className="example-component"><th scope="row">Research <small>40 marks</small></th><td></td><td></td><td></td></tr>
-                      <tr><th scope="row">Evidence</th><td>1</td><td>32</td><td>28</td></tr>
-                      <tr className="anchor-example"><td colSpan={4}>31-40 | Strong evidence</td></tr>
-                      <tr className="anchor-example"><td colSpan={4}>21-30 | Moderate evidence</td></tr>
-                      <tr className="anchor-example"><td colSpan={4}>11-20 | Weak evidence</td></tr>
-                      <tr className="anchor-example"><td colSpan={4}>0-10 | Little or no evidence</td></tr>
-                      <tr><th scope="row">Analysis</th><td>2</td><td>36</td><td>32</td></tr>
-                      <tr className="example-total"><th scope="row">Research total</th><td></td><td className="formula-cell">34.67</td><td className="formula-cell">30.67</td></tr>
+                      <tr className="example-component"><th scope="row">Research</th><td></td><td>40</td><td>31-40</td><td>21-30</td><td>11-20</td><td>0-10</td><td></td><td></td></tr>
+                      <tr><th scope="row">Evidence</th><td>1</td><td></td><td>Strong evidence</td><td>Moderate evidence</td><td>Weak evidence</td><td>Little or no evidence</td><td>32</td><td>28</td></tr>
+                      <tr><th scope="row">Analysis</th><td>2</td><td></td><td>Thorough, well-supported analysis</td><td>Sound analysis</td><td>Limited analysis</td><td>Little or no analysis</td><td>36</td><td>32</td></tr>
+                      <tr className="example-total"><th scope="row">Research total</th><td></td><td className="formula-cell">40</td><td></td><td></td><td></td><td></td><td className="formula-cell">34.67</td><td className="formula-cell">30.67</td></tr>
                     </tbody>
                   </table>
                   <div className="sheet-tabs"><span>Students</span><span className="selected-tab">Grading</span></div>
