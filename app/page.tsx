@@ -129,6 +129,7 @@ export default function Home() {
                 ref={textareaRef}
                 id="rubric"
                 name="rubric"
+                wrap="off"
                 value={rubric}
                 onChange={(event) => { setRubric(event.target.value); setConfirmSample(false); setError(""); setDownload(null); }}
                 onKeyDown={(event) => {
@@ -161,17 +162,15 @@ export default function Home() {
                       <div className="preview-component" key={index}>
                         <div className="component-title"><h3>{component.name}</h3><span>{component.marks}<small>marks</small></span></div>
                         <ul>
-                          {component.items.map((item, itemIndex) => <li key={itemIndex}><span>{item.name}</span><span className="item-weight">{item.weight}<small> wt</small></span></li>)}
+                          {component.items.map((item, itemIndex) => <li key={itemIndex}>
+                            {component.ranges.length > 0 ? <details className="anchor-details">
+                              <summary><span className="item-name">{item.name}</span><span className="item-weight">{item.weight}<small> wt</small></span></summary>
+                              <dl className="item-anchors">{component.ranges.map((range, rangeIndex) => <div key={rangeIndex}>
+                                <dt>{range.label}</dt><dd>{item.anchors[rangeIndex]}</dd>
+                              </div>)}</dl>
+                            </details> : <div className="plain-item"><span className="item-name">{item.name}</span><span className="item-weight">{item.weight}<small> wt</small></span></div>}
+                          </li>)}
                         </ul>
-                        {component.ranges.length > 0 && <details className="anchor-details">
-                          <summary>View anchors</summary>
-                          {component.items.map((item, itemIndex) => <div className="item-anchors" key={itemIndex}>
-                            <h4>{item.name}</h4>
-                            <dl>{component.ranges.map((range, rangeIndex) => <div key={rangeIndex}>
-                              <dt>{range.label}</dt><dd>{item.anchors[rangeIndex]}</dd>
-                            </div>)}</dl>
-                          </div>)}
-                        </details>}
                       </div>
                     ))}
                   </div>
