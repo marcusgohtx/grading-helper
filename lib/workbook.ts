@@ -39,7 +39,7 @@ function row(index: number, cells: string[]): string {
   return `<row r="${index}">${cells.join("")}</row>`;
 }
 
-// Keep the existing style indices so this appearance-only change leaves formulas intact.
+// Preserve the workbook's plain formatting and existing style indices.
 // Text format on roster inputs preserves identifiers such as 001; other values use General.
 const cellStyles = Array.from({ length: 14 }, (_, index) => {
   const bold = [1, 2, 5, 6, 8, 9, 12].includes(index);
@@ -61,7 +61,7 @@ function studentsSheet(): string {
   const rows = [
     row(1, [textCell("A1", "Student list", 1)]),
     row(2, [textCell("A2", "1. Enter up to 100 student names below. Student IDs are optional.", 10)]),
-    row(3, [textCell("A3", "2. Open Grading and enter each subitem score as a number from 0 to 100.", 10)]),
+    row(3, [textCell("A3", "2. Open Grading and score each subitem out of its component marks, using its range descriptions.", 10)]),
     row(4, [textCell("A4", "Keep students in the same rows after marking starts. Do not sort or reorder names.", 10)]),
     row(5, [textCell("A5", "Blank names have no totals. Green cells contain protected formulas.", 10)]),
     row(7, [textCell("A7", "No.", 2), textCell("B7", "Student name", 2), textCell("C7", "Student ID (optional)", 2)]),
@@ -82,14 +82,26 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
     if (!component.items.length || !validValue(component.marks) || component.items.some((item) => !validValue(item.weight))) {
       throw new Error("Each component needs a subitem. Marks and weights must be from 0.000001 to 1,000,000 with at most 6 decimal places.");
     }
+    const ranges = component.ranges;
+    if (!Array.isArray(ranges) || ranges.length > 12 || (ranges.length && !Number.isInteger(component.marks))) throw new Error("Use at most 12 ranges and whole-number marks for components with ranges.");
+    let expected = 0;
+    for (const range of [...ranges].sort((a, b) => a.min - b.min)) {
+      if (!Number.isInteger(range.min) || !Number.isInteger(range.max) || range.min !== expected || range.max < range.min || range.max > component.marks || range.label !== (range.min === range.max ? `${range.min}` : `${range.min}-${range.max}`)) {
+        throw new Error("Component ranges must cover all whole-number scores from zero to its marks exactly once.");
+      }
+      expected = range.max + 1;
+    }
+    if (ranges.length && expected !== component.marks + 1) throw new Error("Component ranges must cover every score through its maximum marks.");
+    if (component.items.some((item) => !Array.isArray(item.anchors) || item.anchors.length !== ranges.length || item.anchors.some((anchor) => !anchor.trim() || anchor.length > 180))) throw new Error("Each subitem needs one nonempty description of at most 180 characters per range.");
   }
   const lastColumn = column(STUDENT_CAPACITY + 3);
   const rows = [
     row(1, [textCell("A1", "Grading workbook", 1)]),
     row(2, [textCell("A2", "Enter names on Students first. Each column below belongs to that student row.", 10)]),
-    row(3, [textCell("A3", "Enter scores from 0 to 100, including decimals. Enter 80 for 80%. Green cells contain formulas.", 10)]),
-    row(4, [textCell("A4", "Component marks = weighted average score / 100 × component marks. Weights are relative within each component.", 10)]),
+    row(3, [textCell("A3", "Score every subitem out of its component marks in column C. Use the range descriptions below each subitem as your reference.", 10)]),
+    row(4, [textCell("A4", "Component score = sum of score × weight / sum of weights. Final total = sum of component scores. Green cells contain formulas.", 10)]),
     row(5, [textCell("A5", "Totals stay blank until all required scores are valid. Do not reorder student names after marking.", 10)]),
+    row(6, [textCell("A6", "Components with ranges require whole-number scores. Ranges are optional; without ranges, decimal scores from zero to the component marks are allowed.", 10)]),
   ];
   const headers = [textCell("A7", "Criterion", 2), textCell("B7", "Weight", 2), textCell("C7", "Component marks", 2)];
   const ids = [textCell("A8", "Student ID (optional)", 11), blankCell("B8", 11), blankCell("C8", 11)];
@@ -102,24 +114,31 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
   rows.push(row(7, headers), row(8, ids));
 
   let nextRow = 10;
-  const sections: { heading: number; first: number; last: number; count: number; summary: number }[] = [];
-  const inputRanges: string[] = [];
+  const sections: { heading: number; itemRows: number[]; summary: number }[] = [];
+  const validations: string[] = [];
   for (const component of rubric.components) {
     const heading = nextRow;
     const cells = [textCell(`A${heading}`, component.name, 5), blankCell(`B${heading}`, 5), numberCell(`C${heading}`, component.marks, 6)];
     for (let index = 0; index < STUDENT_CAPACITY; index += 1) cells.push(blankCell(`${column(index + 4)}${heading}`, 5));
     rows.push(row(heading, cells));
     nextRow += 1;
-    const first = nextRow;
+    const itemRows: number[] = [];
     for (const item of component.items) {
+      itemRows.push(nextRow);
       const itemCells = [textCell(`A${nextRow}`, item.name, 10), numberCell(`B${nextRow}`, item.weight), blankCell(`C${nextRow}`, 0)];
       for (let index = 0; index < STUDENT_CAPACITY; index += 1) itemCells.push(blankCell(`${column(index + 4)}${nextRow}`, 4));
       rows.push(row(nextRow, itemCells));
+      const whole = component.ranges.length > 0;
+      const scoreMessage = `Enter ${whole ? "a whole number" : "a number"} from 0 to ${component.marks}.`;
+      validations.push(`<dataValidation type="${whole ? "whole" : "decimal"}" errorStyle="stop" operator="between" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorTitle="Invalid subitem score" error="${scoreMessage}" promptTitle="Score out of ${component.marks}" prompt="${scoreMessage}" sqref="D${nextRow}:${lastColumn}${nextRow}"><formula1>0</formula1><formula2>${component.marks}</formula2></dataValidation>`);
       nextRow += 1;
+      component.ranges.forEach((range, index) => {
+        // Description rows contain only a locked, literal text cell in column A.
+        rows.push(row(nextRow, [textCell(`A${nextRow}`, `${range.label} | ${item.anchors[index]}`)]));
+        nextRow += 1;
+      });
     }
-    const last = nextRow - 1;
-    sections.push({ heading, first, last, count: component.items.length, summary: 0 });
-    inputRanges.push(`D${first}:${lastColumn}${last}`);
+    sections.push({ heading, itemRows, summary: 0 });
     nextRow += 1;
   }
 
@@ -131,12 +150,27 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
     const cells = [textCell(`A${nextRow}`, component.name, 10), blankCell(`B${nextRow}`, 0), formulaCell(`C${nextRow}`, `$C$${section.heading}`, 7)];
     for (let student = 0; student < STUDENT_CAPACITY; student += 1) {
       const col = column(student + 4);
-      const scores = `${col}${section.first}:${col}${section.last}`;
-      const weights = `$B$${section.first}:$B$${section.last}`;
+      const first = section.itemRows[0];
+      const last = section.itemRows[section.itemRows.length - 1];
+      const scores = `${col}${first}:${col}${last}`;
+      const weights = `$B$${first}:$B$${last}`;
       // TYPE on individual cells also rejects logical values in spreadsheet engines
       // that coerce TRUE/FALSE to numbers inside range-based functions.
-      const invalidTypes = Array.from({ length: section.count }, (_, item) => `TYPE(${col}${section.first + item})<>1`).join(",");
-      const formula = `IF(${col}$7="","",IF(OR(COUNT(${scores})<>${section.count},${invalidTypes}),"",IF(OR(MIN(${scores})<0,MAX(${scores})>100),"",SUMPRODUCT(${scores},${weights})/SUM(${weights})/100*$C$${section.heading})))`;
+      const invalidTypes = section.itemRows.map((r) => `TYPE(${col}${r})<>1`).join(",");
+      // Anchor rows have no B or student cells and stay locked. Spans can therefore
+      // check bounds/fractions without treating anchors as score inputs. Explicit
+      // item row indices keep TYPE checks limited to the editable score cells.
+      const fractions = component.ranges.length ? `,SUMPRODUCT(MOD(${scores},1))<>0` : "";
+      // Preserve direct weighted terms for ordinary components. For very large
+      // components use the equivalent sparse span to stay below Excel's formula
+      // length limit. All intervening weight/score cells are protected blanks.
+      const weightedSum = section.itemRows.length <= 40
+        ? `SUM(${section.itemRows.map((r) => `${col}${r}*$B$${r}`).join(",")})`
+        : `SUMPRODUCT(${scores},${weights})`;
+      const weightSum = section.itemRows.length <= 40
+        ? `SUM(${section.itemRows.map((r) => `$B$${r}`).join(",")})`
+        : `SUM(${weights})`;
+      const formula = `IFERROR(IF(${col}$7="","",IF(OR(COUNT(${scores})<>${section.itemRows.length},${invalidTypes},MIN(${scores})<0,MAX(${scores})>$C$${section.heading}${fractions}),"",${weightedSum}/${weightSum})),"")`;
       cells.push(formulaCell(`${col}${nextRow}`, formula, 7));
     }
     rows.push(row(nextRow, cells));
@@ -150,7 +184,7 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
   }
   rows.push(row(nextRow, totalCells));
 
-  const grading = `${XML_HEADER}<worksheet xmlns="${NS}"><dimension ref="A1:${lastColumn}${nextRow}"/><sheetViews><sheetView showGridLines="1" workbookViewId="0"><pane xSplit="3" ySplit="8" topLeftCell="D9" activePane="bottomRight" state="frozen"/></sheetView></sheetViews><sheetData>${rows.join("")}</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" formatColumns="0" formatRows="0" selectLockedCells="0" selectUnlockedCells="0"/><dataValidations count="1"><dataValidation type="decimal" errorStyle="stop" operator="between" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorTitle="Enter a score from 0 to 100" error="Use a number from 0 to 100. For 80%, enter 80." promptTitle="Subitem score" prompt="Enter 0 to 100. Decimal scores are allowed." sqref="${inputRanges.join(" ")}"><formula1>0</formula1><formula2>100</formula2></dataValidation></dataValidations></worksheet>`;
+  const grading = `${XML_HEADER}<worksheet xmlns="${NS}"><dimension ref="A1:${lastColumn}${nextRow}"/><sheetViews><sheetView showGridLines="1" workbookViewId="0"><pane xSplit="3" ySplit="8" topLeftCell="D9" activePane="bottomRight" state="frozen"/></sheetView></sheetViews><sheetData>${rows.join("")}</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" formatColumns="0" formatRows="0" selectLockedCells="0" selectUnlockedCells="0"/><dataValidations count="${validations.length}">${validations.join("")}</dataValidations></worksheet>`;
 
   const files: Record<string, string> = {
     "[Content_Types].xml": `${XML_HEADER}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`,

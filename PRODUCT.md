@@ -8,20 +8,20 @@ web
 
 ## Purpose
 
-Lecturers enter core grading components and weighted sub-items in a single text box, then download an Excel workbook. This prototype follows the user's simplified October 2026 request, which supersedes the earlier grading-helper-specification.md for this implementation.
+Lecturers enter categories, weighted sub-items and scoring anchors in a single text box, then download an Excel workbook. The simplified October 2026 user request supersedes the earlier grading-helper-specification.md.
 
 ## Workflow
 
-Unindented components have maximum marks. Indented sub-items have relative weights. Submit runs a backend workbook generator. Sheet 1 contains a student roster. Sheet 2 lists criteria vertically and students horizontally, with component and final totals at the bottom.
+Unindented categories specify maximum marks and score ranges. Indented sub-items specify weights and matching anchor labels. Labels match ranges by position; commas are ordinary text and pipes separate fields. Download Excel runs a backend generator. Students holds the roster. Grading lists criteria and anchors vertically, with students horizontally and totals at the bottom.
 
-## Prototype assumptions
+## Scoring
 
-Sub-item scores use a 0 to 100 scale. Component marks equal the weighted average divided by 100 and multiplied by the component maximum. Unmarked items remain incomplete. The workbook supports 100 students. These implementation defaults are stated on the page and in the workbook.
+Each sub-item is scored out of its category maximum. The category result is the weighted average of its sub-item scores. Final marks sum the category results. Anchored ranges use inclusive whole numbers and cover zero to the maximum without gaps or overlaps. Ranges and labels may be omitted together; those scores can contain decimals. Unmarked or invalid inputs keep totals incomplete. Up to 100 students are supported.
 
 ## Constraints
 
-Keep the interface very simple. No accounts within the app, saved rubrics, student uploads, automated grading or feedback system. Sites supplies private access. Student names and scores are entered in the downloaded workbook.
+Keep the page simple and the workbook plain. Keep 11-point fonts and standard dimensions; only bold headers and green formula cells add visual formatting. No student uploads, automated grading or saved data. The Site is publicly accessible. Students and grades stay in the downloaded workbook.
 
 ## Stack
 
-Sites Vinext starter with a server route and a small OOXML generator. This stack supports the explicitly requested backend generation and GPT Site hosting.
+Sites Vinext starter, server route and fflate OOXML generator.

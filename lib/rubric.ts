@@ -1,8 +1,11 @@
+export type ScoreRange = { min: number; max: number; label: string };
+
 export type Rubric = {
   components: {
     name: string;
     marks: number;
-    items: { name: string; weight: number }[];
+    ranges: ScoreRange[];
+    items: { name: string; weight: number; anchors: string[] }[];
   }[];
   totalMarks: number;
   itemCount: number;
@@ -12,6 +15,7 @@ const MAX_TEXT_LENGTH = 30_000;
 const MAX_COMPONENTS = 30;
 const MAX_ITEMS = 200;
 const MAX_LABEL_LENGTH = 180;
+const MAX_RANGES = 12;
 const DECIMAL = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
 
 /** Parse the two-level rubric format. Blank lines are allowed between entries. */
@@ -51,8 +55,8 @@ export function parseRubric(text: string): Rubric {
     if (isItem) itemIndent ??= indent;
 
     const parts = line.slice(indent.length).trimEnd().split("|");
-    if (parts.length !== 2) {
-      fail(lineNumber, isItem ? 'Use "  Subitem name | 2" with one pipe separator.' : 'Use "Component name | 40 marks" with one pipe separator.');
+    if (parts.length < 2) {
+      fail(lineNumber, isItem ? 'Use "  Subitem name | 2 | Description for each range".' : 'Use "Component name | 40 marks | 31-40 | 21-30 | 11-20 | 0-10".');
     }
     const name = parts[0].trim();
     if (!name) fail(lineNumber, "Add a name before the pipe separator.");
@@ -75,9 +79,16 @@ export function parseRubric(text: string): Rubric {
     if (isItem) {
       const component = components.at(-1);
       if (!component) throw new Error(`Line ${lineNumber}: Add a component above this subitem, without indentation.`);
+      const anchors = parts.slice(2).map((part) => part.trim());
+      if (anchors.length !== component.ranges.length) {
+        fail(lineNumber, component.ranges.length ? `Add exactly ${component.ranges.length} descriptions, one for each component range in the same order.` : "This component has no ranges. Use only the subitem name and weight, or add ranges to its component first.");
+      }
+      if (anchors.some((anchor) => !anchor || anchor.length > MAX_LABEL_LENGTH)) {
+        fail(lineNumber, `Each range description must contain 1 to ${MAX_LABEL_LENGTH} characters.`);
+      }
       itemCount += 1;
       if (itemCount > MAX_ITEMS) fail(lineNumber, `Use at most ${MAX_ITEMS} subitems in one rubric.`);
-      component.items.push({ name, weight: value });
+      component.items.push({ name, weight: value, anchors });
       if (!Number.isFinite(component.items.reduce((sum, item) => sum + item.weight, 0))) {
         fail(lineNumber, "The combined subitem weights are too large. Use smaller proportional weights.");
       }
@@ -85,9 +96,31 @@ export function parseRubric(text: string): Rubric {
       const previous = components.at(-1);
       if (previous && previous.items.length === 0) fail(componentLine, `Add at least one indented subitem under "${previous.name}".`);
       if (components.length >= MAX_COMPONENTS) fail(lineNumber, `Use at most ${MAX_COMPONENTS} components in one rubric.`);
+      const rawRanges = parts.slice(2).map((part) => part.trim());
+      if (rawRanges.length > MAX_RANGES) fail(lineNumber, `Use at most ${MAX_RANGES} score ranges per component.`);
+      if (rawRanges.length && !Number.isInteger(value)) fail(lineNumber, "Use whole-number component marks when adding score ranges.");
+      const ranges = rawRanges.map((rawRange): ScoreRange => {
+        const match = rawRange.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+        if (!match) fail(lineNumber, 'Use a whole-number range such as "31-40", or a single score such as "0".');
+        const min = Number(match![1]);
+        const max = Number(match![2] ?? match![1]);
+        if (!Number.isSafeInteger(min) || !Number.isSafeInteger(max) || min > max || max > value) {
+          fail(lineNumber, `Each range must run from its smaller score to its larger score, between 0 and ${value}.`);
+        }
+        return { min, max, label: min === max ? `${min}` : `${min}-${max}` };
+      });
+      // Validate a sorted copy so descriptions retain their positional source order.
+      if (ranges.length) {
+        let expected = 0;
+        for (const range of [...ranges].sort((a, b) => a.min - b.min)) {
+          if (range.min !== expected) fail(lineNumber, `Score ranges must cover every whole number from 0 to ${value} exactly once, with no gaps or overlaps.`);
+          expected = range.max + 1;
+        }
+        if (expected !== value + 1) fail(lineNumber, `Score ranges must cover every whole number from 0 to ${value} exactly once, with no gaps or overlaps.`);
+      }
       totalMarks += value;
       if (!Number.isFinite(totalMarks)) fail(lineNumber, "The total marks are too large. Use smaller mark values.");
-      components.push({ name, marks: value, items: [] });
+      components.push({ name, marks: value, ranges, items: [] });
       componentLine = lineNumber;
     }
   }
