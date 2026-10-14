@@ -29,4 +29,6 @@ Students contains up to 100 names and optional IDs. Grading has criteria down ro
 
 Use default row heights and column widths, 11-point text, bold headers and green formula cells. No merged cells, borders, wrapping or other display styling. Users may resize rows and columns. Formula cells stay protected. IDs use text input formatting to retain leading zeros.
 
+When anchors are present, a protected separator column keeps anchor text from overflowing into blank score inputs. Select an anchor to read its full description in Excel's formula bar.
+
 The Site is public. Only rubric text is sent to the server. Student names and scores are entered in the Excel file. The app has no persistence.

@@ -95,7 +95,8 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
     if (component.items.some((item) => !Array.isArray(item.anchors) || item.anchors.length !== ranges.length || item.anchors.some((anchor) => !anchor.trim() || anchor.length > 180))) throw new Error("Each subitem needs one nonempty description of at most 180 characters per range.");
   }
   const anchorCount = Math.max(...rubric.components.map((component) => component.ranges.length));
-  const firstStudentColumn = 4 + anchorCount;
+  const separatorColumn = anchorCount ? column(4 + anchorCount) : undefined;
+  const firstStudentColumn = 4 + anchorCount + (anchorCount ? 1 : 0);
   const lastColumn = column(firstStudentColumn + STUDENT_CAPACITY - 1);
   const rows = [
     row(1, [textCell("A1", "Grading workbook", 1)]),
@@ -111,6 +112,10 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
     const col = column(index + 4);
     headers.push(textCell(`${col}7`, `Anchor ${index + 1}`, 2));
     ids.push(blankCell(`${col}8`, 0));
+  }
+  if (separatorColumn) {
+    headers.push(blankCell(`${separatorColumn}7`, 0));
+    ids.push(blankCell(`${separatorColumn}8`, 0));
   }
   for (let index = 0; index < STUDENT_CAPACITY; index += 1) {
     const col = column(index + firstStudentColumn);
@@ -130,6 +135,7 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
       const address = `${column(index + 4)}${heading}`;
       cells.push(component.ranges[index] ? textCell(address, component.ranges[index].label, 5) : blankCell(address, 5));
     }
+    if (separatorColumn) cells.push(blankCell(`${separatorColumn}${heading}`, 0));
     for (let index = 0; index < STUDENT_CAPACITY; index += 1) cells.push(blankCell(`${column(index + firstStudentColumn)}${heading}`, 5));
     rows.push(row(heading, cells));
     nextRow += 1;
@@ -141,6 +147,9 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
         const address = `${column(index + 4)}${nextRow}`;
         itemCells.push(item.anchors[index] === undefined ? blankCell(address, 0) : textCell(address, item.anchors[index]));
       }
+      // A protected space stops the final anchor's text spilling into score cells,
+      // including after a grader clears an adjacent score.
+      if (separatorColumn) itemCells.push(textCell(`${separatorColumn}${nextRow}`, " "));
       for (let index = 0; index < STUDENT_CAPACITY; index += 1) itemCells.push(blankCell(`${column(index + firstStudentColumn)}${nextRow}`, 4));
       rows.push(row(nextRow, itemCells));
       const whole = component.ranges.length > 0;
