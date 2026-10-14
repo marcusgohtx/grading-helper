@@ -222,7 +222,7 @@ export default function Home() {
                 </div>
               </figure>
               <figure>
-                <figcaption><h3>2. Enter grades</h3><p>Anchors sit beside each sub-item. Scroll right for student scores.</p></figcaption>
+                <figcaption><h3>2. Enter grades</h3><p>Anchors wrap beside each sub-item. Scroll right for student scores.</p></figcaption>
                 <div className="sheet-window grading-window" tabIndex={0} role="region" aria-label="Grading example, scroll horizontally to see student scores">
                   <table className="sheet-table grading-example" aria-label="Example Grading sheet for a 40-mark component">
                     <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col">Marks</th><th scope="col">Anchor 1</th><th scope="col">Anchor 2</th><th scope="col">Anchor 3</th><th scope="col">Anchor 4</th><th scope="col" aria-label="Separator"></th><th scope="col" className="formula-cell">Alex</th><th scope="col" className="formula-cell">Taylor</th></tr></thead>
@@ -230,6 +230,7 @@ export default function Home() {
                       <tr className="example-component"><th scope="row">Research</th><td></td><td>40</td><td>31-40</td><td>21-30</td><td>11-20</td><td>0-10</td><td></td><td></td><td></td></tr>
                       <tr><th scope="row">Evidence</th><td>1</td><td></td><td>Strong evidence</td><td>Moderate evidence</td><td>Weak evidence</td><td>Little or no evidence</td><td></td><td>32</td><td>28</td></tr>
                       <tr><th scope="row">Analysis</th><td>2</td><td></td><td>Thorough, well-supported analysis</td><td>Sound analysis</td><td>Limited analysis</td><td>Little or no analysis</td><td></td><td>36</td><td>32</td></tr>
+                      <tr><td colSpan={10}>Insert new criteria above this row</td></tr>
                       <tr className="example-total"><th scope="row">Research total</th><td></td><td className="formula-cell">40</td><td></td><td></td><td></td><td></td><td></td><td className="formula-cell">34.67</td><td className="formula-cell">30.67</td></tr>
                     </tbody>
                   </table>
@@ -237,6 +238,7 @@ export default function Home() {
                 </div>
               </figure>
             </div>
+            <p className="workbook-edit-note">To add a criterion in Excel, insert a whole row above its category&apos;s “Insert new criteria above this row” marker. Enter the criterion, weight and student scores. Totals update automatically.</p>
             <p className="privacy-note">Student names and grades stay in your Excel file.</p>
           </section>
 

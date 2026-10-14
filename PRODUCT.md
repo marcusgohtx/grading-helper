@@ -12,7 +12,7 @@ Lecturers enter categories, weighted sub-items and scoring anchors in a single t
 
 ## Workflow
 
-Unindented categories specify maximum marks and score ranges. Indented sub-items specify weights and matching anchor labels. Labels match ranges by position; commas are ordinary text and pipes separate fields. Download Excel runs a backend generator. Students holds the roster. Grading lists criteria vertically, anchors horizontally on each sub-item row, then student score columns. Category rows show anchor ranges. Anchor cells are protected reference text; totals are at the bottom.
+Unindented categories specify maximum marks and score ranges. Indented sub-items specify weights and matching anchor labels. Labels match ranges by position; commas are ordinary text and pipes separate fields. Download Excel runs a backend generator. Students holds the roster. Grading lists criteria vertically, wrapped anchors horizontally on each sub-item row, then student score columns. Category rows show anchor ranges. Criterion names, weights and anchor descriptions can be edited; totals are protected at the bottom. Insert whole rows above a category's marked end row to add criteria that are automatically included in totals. New top-level categories require regenerating the workbook.
 
 ## Scoring
 
@@ -20,7 +20,7 @@ Each sub-item is scored out of its category maximum. The category result is the 
 
 ## Constraints
 
-Keep the page simple and the workbook plain. Keep 11-point fonts and standard dimensions; only bold headers and green formula cells add visual formatting. No student uploads, automated grading or saved data. The Site is publicly accessible. Students and grades stay in the downloaded workbook.
+Keep the page simple and the workbook plain. Keep 11-point fonts and default column widths. Anchor text wraps and Excel fits its row height; bold headers and green formula cells provide emphasis. No student uploads, automated grading or saved data. The Site is publicly accessible. Students and grades stay in the downloaded workbook.
 
 ## Stack
 

@@ -25,10 +25,16 @@ For Research out of 40, scores 32 and 36 with weights 1 and 2 give 34.6666667 ou
 
 ## Workbook
 
-Students contains up to 100 names and optional IDs. Grading has criteria down rows and anchors across columns beside each sub-item. Component rows show the matching ranges. Student score columns follow the anchors; only those score cells are editable. The widest category determines the number of anchor columns. Totals stay at the bottom and remain blank until all required inputs are valid. Do not reorder names after grading begins. The first three columns stay frozen while anchors and students scroll horizontally.
+Students contains up to 100 names and optional IDs. Grading has criteria down rows and anchors across columns beside each sub-item. Component rows show the matching ranges. Criterion names, weights, anchor descriptions and student scores are editable. The widest category determines the number of anchor columns. Totals stay at the bottom and remain blank until all required inputs are valid. Do not reorder names after grading begins. The first three columns stay frozen while anchors and students scroll horizontally.
 
-Use default row heights and column widths, 11-point text, bold headers and green formula cells. No merged cells, borders, wrapping or other display styling. Users may resize rows and columns. Formula cells stay protected. IDs use text input formatting to retain leading zeros.
+Keep default column widths, 11-point text, bold headers and green formula cells. Anchor descriptions wrap; Excel fits their row heights automatically. No merged cells, borders or extra display styling. Users may resize rows and columns. Formula cells stay protected. IDs use text input formatting to retain leading zeros.
 
-When anchors are present, a protected separator column keeps anchor text from overflowing into blank score inputs. Select an anchor to read its full description in Excel's formula bar.
+When anchors are present, a protected separator column separates reference descriptions from student scores.
+
+## Adding criteria in Excel
+
+Select the row number of a category's “Insert new criteria above this row” marker and insert an entire blank row above it. Enter the new criterion name, positive weight, optional anchor descriptions and student scores. The category and final totals automatically include the inserted row. Missing or invalid names, weights or scores keep totals blank. Edit existing weights directly to change their relative contributions.
+
+Keep category headings and insertion markers in place. New top-level categories or additional anchor columns require editing the website rubric and generating a new workbook. Do not insert cells with a partial-column shift; insert whole rows.
 
 The Site is public. Only rubric text is sent to the server. Student names and scores are entered in the Excel file. The app has no persistence.
