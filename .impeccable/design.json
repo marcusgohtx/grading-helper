@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-14T08:45:59Z",
+  "title": "Design system: Grading helper",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Teal" },
+      "paper": { "role": "neutral", "displayName": "Warm paper" },
+      "ink": { "role": "neutral", "displayName": "Dark green ink" },
+      "error": { "role": "error", "displayName": "Rust" }
+    },
+    "shadows": [
+      { "name": "field-focus", "value": "0 0 0 2px #d9e9df", "purpose": "Textarea focus only." }
+    ],
+    "motion": [
+      { "name": "control-state", "value": "160ms ease-out", "purpose": "Button background and text color transitions." },
+      { "name": "loading-spinner", "value": "800ms linear infinite", "purpose": "Workbook generation status. Reduced motion shortens animations to 1ms." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "640px" },
+      { "name": "compact-desktop", "value": "800px" },
+      { "name": "wide-desktop", "value": "1400px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Submit",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The workbook generation action.",
+      "html": "<button class=\"ds-submit\">Submit</button>",
+      "css": ".ds-submit{min-height:46px;min-width:148px;border:0;border-radius:7px;padding:12px 21px;background:var(--teal,#1d6555);color:#fff;font:600 14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;cursor:pointer;transition:background-color 160ms ease-out,color 160ms ease-out}.ds-submit:hover:not(:disabled){background:var(--teal-dark,#174e42)}.ds-submit:focus-visible{outline:3px solid var(--teal,#1d6555);outline-offset:5px}.ds-submit:disabled{background:#dce4dd;color:#4b5e51;cursor:not-allowed}"
+    },
+    {
+      "name": "Text action",
+      "kind": "button",
+      "description": "Sample reset and inline confirmation controls.",
+      "html": "<button class=\"ds-text-action\">Use sample</button>",
+      "css": ".ds-text-action{border:0;padding:2px 0;color:var(--teal,#1d6555);background:transparent;font:600 13px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.ds-text-action:hover{color:#103e33}.ds-text-action:focus-visible{outline:3px solid var(--teal,#1d6555);outline-offset:5px}.ds-text-action:disabled{opacity:.5;cursor:not-allowed}"
+    },
+    {
+      "name": "Rubric field",
+      "kind": "input",
+      "description": "A resizable field for two-level rubric syntax.",
+      "html": "<textarea class=\"ds-rubric\" aria-label=\"Your rubric\" rows=\"5\" spellcheck=\"false\">Research | 40 marks&#10;  Evidence | 1&#10;  Analysis | 2</textarea>",
+      "css": ".ds-rubric{width:100%;padding:20px;resize:vertical;border:1px solid #b8c4b8;border-radius:0 0 8px 8px;outline:none;background:#fff;color:var(--ink,#25362f);caret-color:var(--teal,#1d6555);font:14px/1.78 ui-monospace,SFMono-Regular,Consolas,'Liberation Mono',monospace;tab-size:2;scrollbar-width:thin;scrollbar-color:#a3b4a8 #f4f6f1}.ds-rubric:focus{border-color:var(--teal,#1d6555);box-shadow:0 0 0 2px #d9e9df}.ds-rubric[aria-invalid=true]{border-color:var(--error,#a03728)}.ds-rubric[readonly]{background:#f7f8f4}"
+    },
+    {
+      "name": "Wordmark",
+      "kind": "nav",
+      "description": "A compact home link with a workbook outline.",
+      "html": "<a class=\"ds-wordmark\" href=\"#\"><svg width=\"23\" height=\"25\" viewBox=\"0 0 23 25\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 2h13a2 2 0 0 1 2 2v17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2ZM8 2v21M8 9h12M8 16h12\" stroke=\"currentColor\" stroke-width=\"1.6\"/></svg>Grading helper</a>",
+      "css": ".ds-wordmark{display:inline-flex;gap:11px;align-items:center;color:var(--ink,#25362f);text-decoration:none;font:650 17px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:-.025em}.ds-wordmark svg{color:var(--teal,#1d6555)}.ds-wordmark:focus-visible{outline:3px solid var(--teal,#1d6555);outline-offset:5px}"
+    },
+    {
+      "name": "Sample label",
+      "kind": "chip",
+      "description": "Identifies the initial example rubric.",
+      "html": "<span class=\"ds-sample-label\">Sample rubric</span>",
+      "css": ".ds-sample-label{color:var(--muted,#64716a);font:12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;border:1px solid var(--line,#dce1d9);border-radius:5px;padding:2px 7px}"
+    }
+  ],
+  "narrative": {
+    "overview": "A small task utility centered on one rubric textbox and a bottom Submit button. Keep the interface sparse, with clear instructions and a read-only preview. Use plain wording and no marketing sections.",
+    "keyCharacteristics": ["One rubric textbox", "Warm paper and restrained teal", "Visible instructions and workbook preview"],
+    "rules": [],
+    "dos": [
+      "Do keep one rubric textbox and one primary action.",
+      "Do show keyboard focus and readable error messages.",
+      "Do label example content as a sample."
+    ],
+    "donts": [
+      "Don't add imagery, decorative motion, or marketing copy.",
+      "Don't add student data fields to the web page. Student names and scores belong in the workbook."
+    ]
+  }
+}
