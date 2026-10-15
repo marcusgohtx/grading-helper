@@ -17,8 +17,8 @@ for (const passes of [false, true]) {
     assert.equal(result.status, passes ? 0 : 1, result.stdout + result.stderr);
     assert.match(result.stdout, /runner probe/, 'the runner must actually execute the selected test');
     assert.match(result.stdout, /Excel.*SKIPPED/i);
-    assert.match(result.stdout, /native Excel is opt-in/);
+    assert.match(result.stdout, /focused test run/);
     const reportPath = result.stdout.match(/Report: (.+)/)[1].trim();
-    assert.deepEqual(await fs.readdir(path.dirname(reportPath)), ['summary.json'], 'default runs must not generate native Excel fixtures');
+    assert.deepEqual(await fs.readdir(path.dirname(reportPath)), ['summary.json'], 'focused runs must not generate native Excel fixtures');
   });
 }

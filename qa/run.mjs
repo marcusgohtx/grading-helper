@@ -38,13 +38,13 @@ try {
   const code = execute(process.execPath, ['--import', './qa/register.mjs', '--test', '--test-reporter=spec', ...files]);
   summary.portable = code === 0 ? 'passed' : 'failed';
   failed ||= code !== 0;
-  if (!requireExcel || process.platform !== 'win32' || failed) {
-    summary.excel = `SKIPPED: ${!requireExcel ? portable ? 'portable mode requested' : 'native Excel is opt-in; use --require-excel' : failed ? 'earlier checks failed' : 'Windows with Microsoft Excel required'}`;
+  if (portable || (selectedFile && !requireExcel) || process.platform !== 'win32' || failed) {
+    summary.excel = `SKIPPED: ${portable ? 'portable mode requested' : selectedFile && !requireExcel ? 'focused test run' : failed ? 'earlier checks failed' : 'Windows with Microsoft Excel required'}`;
   } else {
     await generateFixtures(directory);
-    const excelCode = execute('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'qa', 'native-excel.ps1'), '-OutputDirectory', directory]);
-    summary.excel = excelCode === 0 ? 'passed' : excelCode === 2 ? 'SKIPPED: Microsoft Excel COM unavailable' : 'failed';
-    failed ||= excelCode !== 0 && excelCode !== 2;
+    const excelCode = execute('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'qa', 'isolated-excel.ps1'), '-OutputDirectory', directory]);
+    summary.excel = excelCode === 0 ? 'passed' : 'failed';
+    failed ||= excelCode !== 0;
   }
   if (requireExcel && summary.excel !== 'passed') failed = true;
 } catch (error) {

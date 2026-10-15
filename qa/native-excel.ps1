@@ -1,7 +1,12 @@
-param([Parameter(Mandatory=$true)][string]$OutputDirectory)
+param([Parameter(Mandatory=$true)][string]$OutputDirectory,
+      [Parameter(Mandatory=$true)][object]$ExcelApplication,
+      [Parameter(Mandatory=$true)][string]$IsolatedDesktop)
 $ErrorActionPreference = 'Stop'
+if ([DesktopIsolation]::CurrentDesktop() -ne $IsolatedDesktop -or $IsolatedDesktop -eq [DesktopIsolation]::InputDesktop()) {
+    throw 'Native Excel tests require an isolated desktop. Use isolated-excel.ps1.'
+}
 $results = New-Object 'System.Collections.Generic.List[object]'
-$excel = $null
+$excel = $ExcelApplication
 $book = $null
 $exitCode = 0
 $timer = [Diagnostics.Stopwatch]::StartNew()
@@ -32,15 +37,12 @@ function SetInput($cell, $value) {
 }
 try {
     $OutputDirectory = (Resolve-Path -LiteralPath $OutputDirectory).Path
-    try { $excel = New-Object -ComObject Excel.Application } catch {
-        $exitCode = 2
-        $results.Add([pscustomobject]@{name='Excel availability';passed=$true;skipped=$true;reason="Excel COM creation failed: $($_.Exception.Message)"})
-    }
     if ($null -ne $excel) {
-        $excel.Visible=$false; $excel.DisplayAlerts=$false; $excel.AutomationSecurity=3
+        $excel.Visible=$false; $excel.DisplayAlerts=$false; $excel.AutomationSecurity=3; $excel.EnableEvents=$false
         foreach ($fixture in @((0..12 | ForEach-Object { "bands-$_.xlsx" })) + @('decimal.xlsx','capacity.xlsx')) {
             Write-Host "Native Excel: $fixture"
             $book=$excel.Workbooks.Open((Join-Path $OutputDirectory $fixture),0,$false)
+            if ([DesktopIsolation]::WindowDesktop([IntPtr]$excel.Hwnd) -ne $IsolatedDesktop) { throw 'Excel left its isolated desktop.' }
             $students=$book.Worksheets.Item('Students'); $sheet=$book.Worksheets.Item('Grading')
             foreach ($position in @(1,50,100)) { $students.Cells.Item($position+7,2).Value2="QA student $position" }
             Recalculate
