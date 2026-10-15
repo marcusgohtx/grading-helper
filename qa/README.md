@@ -36,8 +36,8 @@ The full suite requires Windows desktop access and a registered Excel installati
 | --- | --- | --- |
 | Rubric parser | Syntax, positive weights, range coverage/order, positional labels, commas, 0-12 bands, precision and resource limits | Browser input behavior |
 | Real download handler | Valid attachment and readable validation errors, size limits, cache headers | Hosted routing or browser downloads |
-| Exported XLSX | XML parsing, two sheets, 100 roster links, every anchor count, horizontal wrapped anchors, plain formatting, protection, freezes, validation and literal labels | Recalculated values |
-| Native Excel | Weighted totals, zero/missing/invalid inputs, decimals, first/middle/last students, inserted rows, inherited validation/protection and wrapping | Other spreadsheet engines and browser layout |
+| Exported XLSX | XML parsing, two sheets, Example scores plus 100 blank roster links, every anchor count, horizontal wrapped anchors, plain formatting, protection, freezes, validation and literal labels | Recalculated values |
+| Native Excel | Weighted totals, existing weights changed after marking, Example totals, decimal entry rules and visible invalid-score flags, zero/missing/invalid inputs, decimals, first/middle/last students, inserted rows, inherited validation/protection and wrapping | Other spreadsheet engines and browser layout |
 | Test command | Executes passing/failing probes and propagates assertion failures | Live deployment |
 | Windows isolation | Off-screen visible-window probe, refusal of input desktop, owned Excel process and desktop verification | Other Windows/Office configurations not tested locally |
 

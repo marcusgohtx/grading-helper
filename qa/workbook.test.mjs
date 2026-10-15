@@ -5,6 +5,27 @@ import { parseRubric } from '../lib/rubric.ts';
 import { weightedRubric, capacityRubric, maximumCategories } from './fixtures.mjs';
 import { openWorkbook, elements, attr, cells, text, column } from './xlsx.mjs';
 
+test('Example student has editable in-range sample scores and leaves 100 real students blank', async () => {
+  for (const input of [weightedRubric(3), 'Tiny | 0.000001 marks\n  Item | 1', capacityRubric]) {
+    const rubric = parseRubric(input);
+    const book = openWorkbook(await createWorkbook(rubric));
+    const roster = cells(book.sheets[0]), grades = cells(book.sheets[1]);
+    assert.equal(text(roster.get('B8')), 'Example');
+    for (let row = 9; row <= 108; row++) assert.equal(text(roster.get(`B${row}`)), '');
+    const count = Math.max(...rubric.components.map(c => c.ranges.length));
+    const first = count ? count + 5 : 4;
+    for (const component of rubric.components) for (const item of component.items) {
+      const label = [...grades.values()].find(c => attr(c, 'r').startsWith('A') && text(c) === item.name);
+      const row = attr(label, 'r').slice(1);
+      const sample = grades.get(`${column(first)}${row}`);
+      const score = Number(elements(sample, 'v')[0]?.textContent);
+      assert.ok(Number.isFinite(score) && score >= 0 && score <= component.marks);
+      assert.equal(attr(elements(book.styles[Number(attr(sample, 's'))], 'protection')[0], 'locked'), '0');
+      for (let student = 1; student <= 100; student++) assert.equal(elements(grades.get(`${column(first + student)}${row}`), 'v').length, 0);
+    }
+  }
+});
+
 for (let count = 0; count <= 12; count++) {
   test(`${count} bands: readable workbook, horizontal anchors and 100 linked student columns`, async () => {
     const book = openWorkbook(await createWorkbook(parseRubric(weightedRubric(count))));
@@ -13,16 +34,16 @@ for (let count = 0; count <= 12; count++) {
     const roster = cells(students), grades = cells(grading);
     const firstStudent = count ? count + 5 : 4;
     const names = elements(grading, 'row').find(n => attr(n, 'r') === '7');
-    assert.equal(elements(names, 'f').length, 100);
+    assert.equal(elements(names, 'f').length, 101);
     const item = Array.from(grades.values()).find(c => attr(c, 'r').startsWith('A') && text(c) === 'Evidence');
     const row = Number(attr(item, 'r').slice(1));
     for (const position of [1, 50, 100]) {
-      const col = column(firstStudent + position - 1);
-      assert.match(elements(grades.get(`${col}7`), 'f')[0].textContent, new RegExp(`'Students'!B${position + 7}`));
-      assert.match(elements(grades.get(`${col}8`), 'f')[0].textContent, new RegExp(`'Students'!C${position + 7}`));
+      const col = column(firstStudent + position);
+      assert.match(elements(grades.get(`${col}7`), 'f')[0].textContent, new RegExp(`'Students'!B${position + 8}`));
+      assert.match(elements(grades.get(`${col}8`), 'f')[0].textContent, new RegExp(`'Students'!C${position + 8}`));
       assert.equal(attr(elements(book.styles[Number(attr(grades.get(`${col}${row}`), 's'))], 'protection')[0], 'locked'), '0');
-      assert.equal(attr(elements(book.styles[Number(attr(roster.get(`C${position + 7}`), 's'))], 'protection')[0], 'locked'), '0');
-      assert.equal(attr(book.styles[Number(attr(roster.get(`C${position + 7}`), 's'))], 'numFmtId'), '49');
+      assert.equal(attr(elements(book.styles[Number(attr(roster.get(`C${position + 8}`), 's'))], 'protection')[0], 'locked'), '0');
+      assert.equal(attr(book.styles[Number(attr(roster.get(`C${position + 8}`), 's'))], 'numFmtId'), '49');
     }
     for (let i = 0; i < count; i++) {
       const anchor = grades.get(`${column(4 + i)}${row}`);
@@ -33,8 +54,21 @@ for (let count = 0; count <= 12; count++) {
     }
     const scoreValidations = elements(grading, 'dataValidation').filter(n => attr(n, 'sqref').startsWith(column(firstStudent)));
     assert.equal(scoreValidations.length, 4);
-    assert.deepEqual(scoreValidations.map(n => attr(n, 'type')), [count ? 'whole' : 'decimal', count ? 'whole' : 'decimal', 'decimal', 'decimal']);
+    assert.deepEqual(scoreValidations.map(n => attr(n, 'type')), ['decimal', 'decimal', 'decimal', 'decimal']);
     assert.deepEqual(scoreValidations.map(n => elements(n, 'formula2')[0].textContent), ['40', '40', '20', '20']);
+    for (const validation of scoreValidations) {
+      assert.equal(attr(validation, 'errorStyle'), 'stop');
+      assert.equal(attr(validation, 'showErrorMessage'), '1');
+      assert.match(attr(validation, 'error'), /0 to (40|20)/);
+    }
+    const flags = elements(grading, 'conditionalFormatting');
+    assert.equal(flags.length, 2, 'invalid pasted scores flagged in both categories');
+    for (const flag of flags) {
+      const rule = elements(flag, 'cfRule')[0];
+      assert.equal(attr(rule, 'type'), 'expression');
+      const dxf = elements(book.documents['xl/styles.xml'], 'dxf')[Number(attr(rule, 'dxfId'))];
+      assert.equal(attr(elements(dxf, 'fgColor')[0], 'rgb'), 'FFFFC7CE');
+    }
     assert.equal(attr(elements(grading, 'pane')[0], 'topLeftCell'), 'D9');
     assert.equal(attr(elements(grading, 'pane')[0], 'xSplit'), '3');
     assert.equal(attr(elements(grading, 'pane')[0], 'ySplit'), '8');

@@ -16,8 +16,9 @@ Use fixed rubrics from `qa/fixtures.mjs`, independent of the website demo. Expec
 ## Workbook invariants
 
 - Each sub-item is scored out of its parent category's marks. Category scores are weighted averages; the final total sums category scores. There is no extra percentage conversion.
-- Anchor descriptions match ranges by position, even when ranges are entered out of order. Commas are text, pipes delimit fields. Anchored scores are whole numbers; unanchored scores may be decimals.
+- Anchor descriptions match ranges by position, even when ranges are entered out of order. Commas are text, pipes delimit fields. Anchor range labels use whole numbers. Scores may contain halves or decimals from zero to the category maximum, with or without anchors.
 - A missing or invalid required score, name or weight leaves totals incomplete. Zero is a valid score. Literal labels that look like formulas remain text.
+- Include a dummy Example student with valid editable sample scores, followed by 100 blank student slots. Reject invalid typed scores and flag invalid pasted scores red; keep incomplete totals blank.
 - Criteria are vertical, anchors horizontal and students occupy columns. Formula cells are protected and green; anchor descriptions wrap. Preserve plain formatting, native row sizing and frozen headers.
 - New criteria inserted as entire rows above a category's marker participate in totals. New top-level categories require regenerating the workbook. Preserve that distinction unless the user requests a change.
 

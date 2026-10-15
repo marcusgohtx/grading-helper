@@ -2,6 +2,7 @@ import { strToU8, zipSync } from "fflate";
 import type { Rubric } from "./rubric";
 
 const STUDENT_CAPACITY = 100;
+const SCORE_COLUMNS = STUDENT_CAPACITY + 1; // Example, followed by 100 real students.
 const XML_HEADER = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
 const NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 
@@ -56,22 +57,25 @@ const styles = `${XML_HEADER}<styleSheet xmlns="${NS}">
 <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
 <cellXfs count="16">${cellStyles}</cellXfs>
 <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+<dxfs count="1"><dxf><fill><patternFill patternType="solid"><fgColor rgb="FFFFC7CE"/><bgColor rgb="FFFFC7CE"/></patternFill></fill></dxf></dxfs>
 </styleSheet>`;
 
 function studentsSheet(): string {
   const rows = [
     row(1, [textCell("A1", "Student list", 1)]),
-    row(2, [textCell("A2", "1. Enter up to 100 student names below. Student IDs are optional.", 10)]),
+    row(2, [textCell("A2", "1. Keep Example as a guide. Enter up to 100 student names from row 9. Student IDs are optional.", 10)]),
     row(3, [textCell("A3", "2. Open Grading and enter scores only beneath student names, out of the component marks.", 10)]),
     row(4, [textCell("A4", "Keep students in the same rows after marking starts. Do not sort or reorder names.", 10)]),
     row(5, [textCell("A5", "Blank names have no totals. Green cells contain protected formulas.", 10)]),
+    row(6, [textCell("A6", "Example contains sample scores. Clear its name and scores to remove the example; keep real students in their rows.", 10)]),
     row(7, [textCell("A7", "No.", 2), textCell("B7", "Student name", 2), textCell("C7", "Student ID (optional)", 2)]),
   ];
+  rows.push(row(8, [textCell("A8", "Demo"), textCell("B8", "Example", 3), blankCell("C8", 3)]));
   for (let index = 0; index < STUDENT_CAPACITY; index += 1) {
-    const r = index + 8;
+    const r = index + 9;
     rows.push(row(r, [numberCell(`A${r}`, index + 1), blankCell(`B${r}`, 3), blankCell(`C${r}`, 3)]));
   }
-  return `${XML_HEADER}<worksheet xmlns="${NS}"><dimension ref="A1:C107"/><sheetViews><sheetView showGridLines="1" workbookViewId="0"><pane ySplit="7" topLeftCell="A8" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetData>${rows.join("")}</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" formatColumns="0" formatRows="0" selectLockedCells="0" selectUnlockedCells="0"/></worksheet>`;
+  return `${XML_HEADER}<worksheet xmlns="${NS}"><dimension ref="A1:C108"/><sheetViews><sheetView showGridLines="1" workbookViewId="0"><pane ySplit="7" topLeftCell="A8" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetData>${rows.join("")}</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" formatColumns="0" formatRows="0" selectLockedCells="0" selectUnlockedCells="0"/></worksheet>`;
 }
 
 /** Create a standalone XLSX using only web-compatible APIs, including in a Worker. */
@@ -98,14 +102,14 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
   const anchorCount = Math.max(...rubric.components.map((component) => component.ranges.length));
   const separatorColumn = anchorCount ? column(4 + anchorCount) : undefined;
   const firstStudentColumn = 4 + anchorCount + (anchorCount ? 1 : 0);
-  const lastColumn = column(firstStudentColumn + STUDENT_CAPACITY - 1);
+  const lastColumn = column(firstStudentColumn + SCORE_COLUMNS - 1);
   const rows = [
     row(1, [textCell("A1", "Grading workbook", 1)]),
     row(2, [textCell("A2", "Enter names on Students first. Enter scores only beneath student names, out of the component marks in column C.", 10)]),
-    row(3, [textCell("A3", "Anchor descriptions wrap for reference and can be edited. Green formula cells are protected.", 10)]),
+    row(3, [textCell("A3", "Example contains sample scores. Red score cells are invalid; correct them to calculate totals. Green formula cells are protected.", 10)]),
     row(4, [textCell("A4", "Component score = sum of score × weight / sum of weights. Final total = sum of component scores. Green cells contain formulas.", 10)]),
     row(5, [textCell("A5", "Add criteria within a category by inserting a blank row above its end marker. Enter its name, positive weight, anchor descriptions and student scores.", 10)]),
-    row(6, [textCell("A6", "Components with ranges require whole-number scores. Ranges are optional; without ranges, decimal scores from zero to the component marks are allowed.", 10)]),
+    row(6, [textCell("A6", "Enter scores from 0 to the component marks, including halves and decimals. Anchors are reference descriptions.", 10)]),
   ];
   const headers = [textCell("A7", "Criterion", 2), textCell("B7", "Weight", 2), textCell("C7", "Component marks", 2)];
   const ids = [textCell("A8", "Student ID (optional)", 11), blankCell("B8", 11), blankCell("C8", 11)];
@@ -118,7 +122,7 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
     headers.push(blankCell(`${separatorColumn}7`, 0));
     ids.push(blankCell(`${separatorColumn}8`, 0));
   }
-  for (let index = 0; index < STUDENT_CAPACITY; index += 1) {
+  for (let index = 0; index < SCORE_COLUMNS; index += 1) {
     const col = column(index + firstStudentColumn);
     const sourceRow = index + 8;
     headers.push(formulaCell(`${col}7`, `IF('Students'!B${sourceRow}="","",'Students'!B${sourceRow})`, 12));
@@ -137,10 +141,10 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
       cells.push(component.ranges[index] ? textCell(address, component.ranges[index].label, 15) : blankCell(address, 5));
     }
     if (separatorColumn) cells.push(blankCell(`${separatorColumn}${heading}`, 0));
-    for (let index = 0; index < STUDENT_CAPACITY; index += 1) cells.push(blankCell(`${column(index + firstStudentColumn)}${heading}`, 5));
+    for (let index = 0; index < SCORE_COLUMNS; index += 1) cells.push(blankCell(`${column(index + firstStudentColumn)}${heading}`, 5));
     rows.push(row(heading, cells));
     nextRow += 1;
-    for (const item of component.items) {
+    for (const [itemIndex, item] of component.items.entries()) {
       const itemCells = [textCell(`A${nextRow}`, item.name, 4), numberCell(`B${nextRow}`, item.weight, 4), blankCell(`C${nextRow}`, 0)];
       for (let index = 0; index < anchorCount; index += 1) {
         const address = `${column(index + 4)}${nextRow}`;
@@ -149,17 +153,21 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
       // A protected space stops the final anchor's text spilling into score cells,
       // including after a grader clears an adjacent score.
       if (separatorColumn) itemCells.push(textCell(`${separatorColumn}${nextRow}`, " "));
-      for (let index = 0; index < STUDENT_CAPACITY; index += 1) itemCells.push(blankCell(`${column(index + firstStudentColumn)}${nextRow}`, 4));
+      // Fixed variation makes the demonstration reproducible and keeps all scores in range.
+      const sampleScore = Math.min(component.marks, Math.round(component.marks * (itemIndex % 2 ? 0.75 : 0.5) * 1_000_000) / 1_000_000);
+      for (let index = 0; index < SCORE_COLUMNS; index += 1) {
+        const address = `${column(index + firstStudentColumn)}${nextRow}`;
+        itemCells.push(index === 0 ? numberCell(address, sampleScore, 4) : blankCell(address, 4));
+      }
       rows.push(row(nextRow, itemCells));
-      const whole = component.ranges.length > 0;
-      const scoreMessage = `Enter ${whole ? "a whole number" : "a number"} from 0 to ${component.marks}.`;
-      validations.push(`<dataValidation type="${whole ? "whole" : "decimal"}" errorStyle="stop" operator="between" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorTitle="Invalid subitem score" error="${scoreMessage}" promptTitle="Score out of ${component.marks}" prompt="${scoreMessage}" sqref="${column(firstStudentColumn)}${nextRow}:${lastColumn}${nextRow}"><formula1>0</formula1><formula2>${component.marks}</formula2></dataValidation>`);
+      const scoreMessage = `Enter a number from 0 to ${component.marks}.`;
+      validations.push(`<dataValidation type="decimal" errorStyle="stop" operator="between" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorTitle="Invalid subitem score" error="${scoreMessage}" promptTitle="Score out of ${component.marks}" prompt="${scoreMessage}" sqref="${column(firstStudentColumn)}${nextRow}:${lastColumn}${nextRow}"><formula1>0</formula1><formula2>${component.marks}</formula2></dataValidation>`);
       validations.push(`<dataValidation type="decimal" errorStyle="stop" operator="greaterThan" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorTitle="Invalid criterion weight" error="Enter a positive numeric weight." promptTitle="Relative weight" prompt="Enter a number greater than zero." sqref="B${nextRow}"><formula1>0</formula1></dataValidation>`);
       nextRow += 1;
     }
     const end = nextRow;
     const endCells = [textCell(`A${end}`, "Insert new criteria above this row")];
-    for (let index = 2; index <= firstStudentColumn + STUDENT_CAPACITY - 1; index += 1) endCells.push(blankCell(`${column(index)}${end}`, 0));
+    for (let index = 2; index <= firstStudentColumn + SCORE_COLUMNS - 1; index += 1) endCells.push(blankCell(`${column(index)}${end}`, 0));
     rows.push(row(end, endCells));
     sections.push({ heading, end, summary: 0 });
     nextRow += 1;
@@ -171,7 +179,7 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
     section.summary = nextRow;
     const component = rubric.components[index];
     const cells = [textCell(`A${nextRow}`, component.name, 10), blankCell(`B${nextRow}`, 0), formulaCell(`C${nextRow}`, `$C$${section.heading}`, 7)];
-    for (let student = 0; student < STUDENT_CAPACITY; student += 1) {
+    for (let student = 0; student < SCORE_COLUMNS; student += 1) {
       const col = column(student + firstStudentColumn);
       // Heading and end-marker references move when rows are inserted. INDEX
       // includes every criterion between them, even directly after the heading
@@ -185,24 +193,29 @@ export async function createWorkbook(rubric: Rubric): Promise<Uint8Array> {
       const invalidNames = `SUMPRODUCT(--(LEN(TRIM(${names}&""))>0))<>ROWS(${names})`;
       const invalidWeights = `SUMPRODUCT(--ISNUMBER(${weights}))<>ROWS(${weights}),SUMPRODUCT(--(${weights}>0))<>ROWS(${weights})`;
       const invalidScores = `SUMPRODUCT(--ISNUMBER(${scores}))<>ROWS(${scores})`;
-      const fractions = component.ranges.length ? `,SUMPRODUCT(MOD(${scores},1))<>0` : "";
       const weightedSum = `SUMPRODUCT(${scores},${weights})`;
       const weightSum = `SUM(${weights})`;
-      const formula = `IFERROR(IF(${col}$7="","",IF(OR(${invalidNames},${invalidWeights},${invalidScores},MIN(${scores})<0,MAX(${scores})>$C$${section.heading}${fractions}),"",${weightedSum}/${weightSum})),"")`;
+      const formula = `IFERROR(IF(${col}$7="","",IF(OR(${invalidNames},${invalidWeights},${invalidScores},MIN(${scores})<0,MAX(${scores})>$C$${section.heading}),"",${weightedSum}/${weightSum})),"")`;
       cells.push(formulaCell(`${col}${nextRow}`, formula, 7));
     }
     rows.push(row(nextRow, cells));
     nextRow += 1;
   });
   const totalCells = [textCell(`A${nextRow}`, "Final total", 8), blankCell(`B${nextRow}`, 8), formulaCell(`C${nextRow}`, `SUM(${sections.map((section) => `$C$${section.heading}`).join(",")})`, 9)];
-  for (let student = 0; student < STUDENT_CAPACITY; student += 1) {
+  for (let student = 0; student < SCORE_COLUMNS; student += 1) {
     const col = column(student + firstStudentColumn);
     const totals = sections.map((section) => `${col}${section.summary}`).join(",");
     totalCells.push(formulaCell(`${col}${nextRow}`, `IF(${col}$7="","",IF(COUNT(${totals})<>${sections.length},"",SUM(${totals})))`, 9));
   }
   rows.push(row(nextRow, totalCells));
 
-  const grading = `${XML_HEADER}<worksheet xmlns="${NS}"><dimension ref="A1:${lastColumn}${nextRow}"/><sheetViews><sheetView showGridLines="1" workbookViewId="0"><pane xSplit="3" ySplit="8" topLeftCell="D9" activePane="bottomRight" state="frozen"/></sheetView></sheetViews><sheetData>${rows.join("")}</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" formatColumns="0" formatRows="0" insertRows="0" selectLockedCells="0" selectUnlockedCells="0"/><dataValidations count="${validations.length}">${validations.join("")}</dataValidations></worksheet>`;
+  // Include the protected end marker so whole-row insertion extends the flag range.
+  const invalidScoreFlags = sections.map((section, index) => {
+    const first = `${column(firstStudentColumn)}${section.heading + 1}`;
+    const invalid = `IFERROR(AND(${first}<>"",OR(NOT(ISNUMBER(${first})),${first}<0,${first}>$C$${section.heading})),TRUE)`;
+    return `<conditionalFormatting sqref="${first}:${lastColumn}${section.end}"><cfRule type="expression" dxfId="0" priority="${index + 1}"><formula>${escapeXml(invalid)}</formula></cfRule></conditionalFormatting>`;
+  }).join("");
+  const grading = `${XML_HEADER}<worksheet xmlns="${NS}"><dimension ref="A1:${lastColumn}${nextRow}"/><sheetViews><sheetView showGridLines="1" workbookViewId="0"><pane xSplit="3" ySplit="8" topLeftCell="D9" activePane="bottomRight" state="frozen"/></sheetView></sheetViews><sheetData>${rows.join("")}</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" formatColumns="0" formatRows="0" insertRows="0" selectLockedCells="0" selectUnlockedCells="0"/>${invalidScoreFlags}<dataValidations count="${validations.length}">${validations.join("")}</dataValidations></worksheet>`;
 
   const files: Record<string, string> = {
     "[Content_Types].xml": `${XML_HEADER}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`,

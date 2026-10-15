@@ -16,11 +16,11 @@ Unindented categories specify maximum marks and score ranges. Indented sub-items
 
 ## Scoring
 
-Each sub-item is scored out of its category maximum. The category result is the weighted average of its sub-item scores. Final marks sum the category results. Anchored ranges use inclusive whole numbers and cover zero to the maximum without gaps or overlaps. Ranges and labels may be omitted together; those scores can contain decimals. Unmarked or invalid inputs keep totals incomplete. Up to 100 students are supported.
+Each sub-item is scored out of its category maximum. The category result is the weighted average of its sub-item scores. Final marks sum the category results. Anchored ranges use inclusive whole numbers and cover zero to the maximum without gaps or overlaps. Ranges and labels may be omitted together. All scores may contain halves and decimals from zero to the category maximum; anchor ranges remain whole-number reference labels. Unmarked or invalid inputs keep totals incomplete. An Example student starts with sample scores, followed by 100 blank student slots.
 
 ## Constraints
 
-Keep the page simple and the workbook plain. Keep 11-point fonts and default column widths. Anchor text wraps and Excel fits its row height; bold headers and green formula cells provide emphasis. No student uploads, automated grading or saved data. The Site is publicly accessible. Students and grades stay in the downloaded workbook.
+Keep the page simple and the workbook plain. Keep 11-point fonts and default column widths. Anchor text wraps and Excel fits its row height; bold headers and green formula cells provide emphasis. Invalid score entries are rejected; pasted invalid scores are flagged red and keep totals blank. No student uploads, automated grading or saved data. The Site is publicly accessible. Students and grades stay in the downloaded workbook.
 
 ## Stack
 
