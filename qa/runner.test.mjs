@@ -13,9 +13,12 @@ for (const passes of [false, true]) {
     const directory = await fs.mkdtemp(path.join(base, 'runner-'));
     const fixture = path.join(directory, 'probe.test.mjs');
     await fs.writeFile(fixture, `import test from 'node:test'; import assert from 'node:assert/strict'; test('runner probe', () => assert.equal(1, ${passes ? 1 : 2}));`);
-    const result = spawnSync(process.execPath, ['qa/run.mjs', '--portable', '--test-file', fixture], { cwd: root, encoding: 'utf8', windowsHide: true });
+    const result = spawnSync(process.execPath, ['qa/run.mjs', '--test-file', fixture], { cwd: root, encoding: 'utf8', windowsHide: true });
     assert.equal(result.status, passes ? 0 : 1, result.stdout + result.stderr);
     assert.match(result.stdout, /runner probe/, 'the runner must actually execute the selected test');
     assert.match(result.stdout, /Excel.*SKIPPED/i);
+    assert.match(result.stdout, /native Excel is opt-in/);
+    const reportPath = result.stdout.match(/Report: (.+)/)[1].trim();
+    assert.deepEqual(await fs.readdir(path.dirname(reportPath)), ['summary.json'], 'default runs must not generate native Excel fixtures');
   });
 }

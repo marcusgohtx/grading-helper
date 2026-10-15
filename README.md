@@ -9,7 +9,7 @@ Create a plain Excel grading workbook from weighted criteria and positional scor
 
 ## Test and contribute
 
-Install with `npm ci`, then run `npm test`. On Windows with Excel installed this also checks actual calculations and inserted rows. Use `npm.cmd test -- --require-excel` when native verification is required; portable-only runs explicitly report Excel as skipped. See the QA guide for focused TDD runs and coverage limits.
+Install with `npm ci`, then run `npm test`. Routine tests stay in the background and never launch desktop Excel. Native calculation and insertion checks are available separately through `npm.cmd test -- --require-excel` on Windows. Run those only when desktop Excel testing is explicitly requested, or on a separate test machine. See the QA guide for focused TDD runs and coverage limits.
 
 The maintenance skill is versioned in this repository. Copy its folder into your Codex skills directory to make it discoverable, or ask your agent to read its SKILL.md directly. GitHub pushes do not automatically deploy the live Sites application.
 

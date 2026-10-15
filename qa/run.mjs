@@ -38,8 +38,8 @@ try {
   const code = execute(process.execPath, ['--import', './qa/register.mjs', '--test', '--test-reporter=spec', ...files]);
   summary.portable = code === 0 ? 'passed' : 'failed';
   failed ||= code !== 0;
-  if (portable || process.platform !== 'win32' || failed) {
-    summary.excel = `SKIPPED: ${portable ? 'portable mode requested' : failed ? 'earlier checks failed' : 'Windows with Microsoft Excel required'}`;
+  if (!requireExcel || process.platform !== 'win32' || failed) {
+    summary.excel = `SKIPPED: ${!requireExcel ? portable ? 'portable mode requested' : 'native Excel is opt-in; use --require-excel' : failed ? 'earlier checks failed' : 'Windows with Microsoft Excel required'}`;
   } else {
     await generateFixtures(directory);
     const excelCode = execute('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'qa', 'native-excel.ps1'), '-OutputDirectory', directory]);

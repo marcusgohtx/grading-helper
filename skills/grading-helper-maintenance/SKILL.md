@@ -23,7 +23,7 @@ Use fixed rubrics from `qa/fixtures.mjs`, independent of the website demo. Expec
 
 ## Verify and finish
 
-Run `npm test`. Use `npm.cmd test -- --require-excel` for changes to formulas, row insertion, validation or workbook protection on a Windows machine with Excel. In PowerShell, use `npm.cmd` when passing test flags so npm's PowerShell wrapper cannot swallow them. A portable pass does not verify Excel calculations: report any native skip and its reason. If Excel is unavailable, finish portable work and identify the remaining native verification without claiming completion of that coverage.
+Run `npm test`, which stays in the background and never launches desktop Excel. Changes to formulas, row insertion, validation or workbook protection also need native verification. Use `npm.cmd test -- --require-excel` only when desktop Excel testing is explicitly requested, or on a separate test machine. Excel can briefly show UI despite hidden-window settings; do not interrupt the user's work to run it. In PowerShell, use `npm.cmd` when passing test flags so npm's PowerShell wrapper cannot swallow them. A portable pass does not verify Excel calculations: report any native skip and its reason. If native testing cannot run, finish portable work and identify the remaining verification without claiming completion of that coverage.
 
 For interface or default-example changes, also check the browser preview and actual download. Backend handler tests do not exercise the browser or hosted routing. Keep student data out of test fixtures; use synthetic roster names.
 

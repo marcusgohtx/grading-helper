@@ -6,7 +6,7 @@ Run from the repository root after `npm ci`, with Node 22.13 or newer:
 npm test
 ```
 
-This command checks TypeScript, runs Node's test suite, then opens disposable generated fixtures in a separate hidden Microsoft Excel instance on Windows. It closes its own workbooks and Excel instance without touching an existing user session. No network calls, real student data or live deployments are used.
+This command checks TypeScript and runs Node's test suite entirely in the background. It never launches desktop Excel. No network calls, real student data or live deployments are used.
 
 Failures return a nonzero exit code. Excel unavailability is explicitly reported as **SKIPPED**, never as a calculation pass. Reports and generated workbooks are saved under ignored `qa/test-output/run-*` directories.
 
@@ -16,7 +16,7 @@ npm test -- --require-excel
 npm test -- --portable --test-file qa/parser.test.mjs
 ```
 
-`--portable` intentionally skips native Excel. `--require-excel` fails unless native checks pass; use it before releasing changes to formulas, insertion, validation or protection. The two flags cannot be combined. `--test-file` runs one test file and omits the full TypeScript check for a focused TDD loop.
+`--portable` explicitly selects the default background mode. `--require-excel` opts into opening disposable fixtures in a separate desktop Excel instance on Windows and fails unless native checks pass. The script requests hidden windows and closes its own instance, but Excel can briefly show UI. Run that option only when desktop Excel testing is explicitly requested, or on a separate test machine. Native verification is needed before releasing changes to formulas, insertion, validation or protection. The two flags cannot be combined. `--test-file` runs one test file and omits the full TypeScript check for a focused TDD loop.
 
 In Windows PowerShell, replace `npm` with `npm.cmd` in commands with flags. This avoids npm's PowerShell wrapper swallowing the arguments. For example, use `npm.cmd test -- --require-excel`.
 
