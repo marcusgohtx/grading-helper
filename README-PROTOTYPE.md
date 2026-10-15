@@ -16,6 +16,10 @@ Category lines specify maximum marks and inclusive whole-number ranges. Each ind
 
 Ranges and labels may be omitted together. Such categories allow decimal scores. Every sub-item is scored out of its category's maximum, including when ranges are omitted.
 
+## Default demo
+
+The default rubric has three 10-mark categories: Photo annotations & critique, Suggested improvements & sketch, and Rationale write-up. It covers one example, totals 30 marks and uses three bands: 0-3, 4-7 and 8-10. Its relative weights are illustrative, not an official assignment marking scheme. AI-related criteria and deductions are excluded from the demo.
+
 ## Calculations
 
 Component score = sum(sub-item score × weight) / sum(weights).

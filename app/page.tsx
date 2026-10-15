@@ -3,17 +3,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { parseRubric } from "@/lib/rubric";
 
-const SAMPLE = `Research | 40 marks | 31-40 | 21-30 | 11-20 | 0-10
-  Evidence | 1 | Strong evidence | Moderate evidence | Weak evidence | Little or no evidence
-  Analysis | 2 | Thorough, well-supported analysis | Sound analysis | Limited analysis | Little or no analysis
+const SAMPLE = `Photo annotations & critique | 10 marks | 0-3 | 4-7 | 8-10
+  Photo clarity | 1 | unclear | clear | clear
+  Photo authenticity | 1 | not original | authentic | authentic
+  Photo annotation | 1 | unannotated | relevant | thoughtful
+  Choice of material | 3 | not problematic | minor weaknesses | clearly flawed
+  Descriptions | 3 | none | adequate and general | detailed and specific
+  Identification of problems | 3 | few, vague or incorrect | 2-3 identified, limited depth | multiple, well-justified problems
+  Explanation of design flaws | 3 | little or no explanation | generic or incomplete reasoning | precise cause-and-effect reasoning
+  Psychological concepts | 3 | missing, incorrect or misused | some correct, loosely linked | multiple, accurate and integrated
 
-Presentation | 40 marks | 31-40 | 21-30 | 11-20 | 0-10
-  Structure | 1 | Excellent structure | Clear structure | Uneven structure | Little or no structure
-  Clarity | 1 | Very clear | Mostly clear | Sometimes unclear | Mostly unclear
+Suggested improvements & sketch | 10 marks | 0-3 | 4-7 | 8-10
+  Suggested changes | 3 | few, impractical or irrelevant | 2 relevant, mostly practical changes | 2-4 practical, relevant and well-justified changes
+  Sketch | 1 | missing, unclear or unrelated | linked to suggestions, weak theory links | clear, purposeful and grounded in psychological principles
+  Psychological concepts | 3 | missing or incorrect application | some correct, limited application | multiple principles applied precisely and together
+  Expected impact | 3 | little or no explanation | brief or generic reasoning | clear cause-and-effect links to clarity, attention, memory or action
 
-Reflection | 20 marks | 16-20 | 11-15 | 6-10 | 0-5
-  Insight | 2 | Deep insight | Relevant insight | Limited insight | Little or no insight
-  Next steps | 1 | Specific, practical steps | Useful steps | Vague steps | Little or no plan`;
+Rationale write-up | 10 marks | 0-3 | 4-7 | 8-10
+  Justification of changes | 3 | missing, unclear or weak | limited, generic or uneven | clear, detailed and logical for all changes
+  Psychological concepts | 3 | one or none, or applied incorrectly | 2-3 correct, links need detail | multiple concepts applied accurately in context
+  Links to intended outcomes | 3 | little or no explanation | some outcomes explained, others overlooked | convincing links to readability, comprehension, retention or behaviour
+  Depth and integration | 3 | theory links absent or incorrect | some understanding, limited integration | deep understanding with psychological principles linked together
+  Writing quality | 1 | errors hinder understanding | clear enough, minor errors | polished, coherent and fluent`;
 
 export default function Home() {
   const [rubric, setRubric] = useState(SAMPLE);
