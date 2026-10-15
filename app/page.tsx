@@ -26,6 +26,17 @@ Rationale write-up | 10 marks | 0-3 | 4-7 | 8-10
   Depth and integration | 3 | theory links absent or incorrect | some understanding, limited integration | deep understanding with psychological principles linked together
   Writing quality | 1 | errors hinder understanding | clear enough, minor errors | polished, coherent and fluent`;
 
+const EXAMPLE_COMPONENT = parseRubric(SAMPLE).components[0];
+const EXAMPLE_STUDENTS = [
+  { name: "Alex", id: "001", scoreRatio: 0.8 },
+  { name: "Taylor", id: "002", scoreRatio: 0.6 },
+];
+const exampleScore = (student: typeof EXAMPLE_STUDENTS[number], itemIndex: number) =>
+  Math.round(EXAMPLE_COMPONENT.marks * (student.scoreRatio + (itemIndex % 2) * 0.1));
+const exampleTotal = (student: typeof EXAMPLE_STUDENTS[number]) =>
+  (EXAMPLE_COMPONENT.items.reduce((sum, item, index) => sum + exampleScore(student, index) * item.weight, 0)
+    / EXAMPLE_COMPONENT.items.reduce((sum, item) => sum + item.weight, 0)).toFixed(2);
+
 export default function Home() {
   const [rubric, setRubric] = useState(SAMPLE);
   const [loading, setLoading] = useState(false);
@@ -216,7 +227,7 @@ export default function Home() {
           </div>
 
           <section className="workbook-guide" aria-labelledby="workbook-heading">
-            <div className="guide-heading"><h2 id="workbook-heading">Inside your workbook</h2><span>Example</span></div>
+            <div className="guide-heading"><h2 id="workbook-heading">Inside your workbook</h2><span>Sample rubric | First category</span></div>
             <div className="sheet-examples">
               <figure>
                 <figcaption><h3>1. Add students</h3><p>Enter names on the Students sheet.</p></figcaption>
@@ -224,8 +235,7 @@ export default function Home() {
                   <table className="sheet-table roster-example" aria-label="Example Students sheet">
                     <thead><tr><th scope="col">No.</th><th scope="col">Student name</th><th scope="col">Student ID</th></tr></thead>
                     <tbody>
-                      <tr><td>1</td><td>Alex</td><td>001</td></tr>
-                      <tr><td>2</td><td>Taylor</td><td>002</td></tr>
+                      {EXAMPLE_STUDENTS.map((student, index) => <tr key={student.id}><td>{index + 1}</td><td>{student.name}</td><td>{student.id}</td></tr>)}
                       <tr><td>3</td><td></td><td></td></tr>
                     </tbody>
                   </table>
@@ -235,14 +245,33 @@ export default function Home() {
               <figure>
                 <figcaption><h3>2. Enter grades</h3><p>Anchors wrap beside each sub-item. Scroll right for student scores.</p></figcaption>
                 <div className="sheet-window grading-window" tabIndex={0} role="region" aria-label="Grading example, scroll horizontally to see student scores">
-                  <table className="sheet-table grading-example" aria-label="Example Grading sheet for a 40-mark component">
-                    <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col">Marks</th><th scope="col">Anchor 1</th><th scope="col">Anchor 2</th><th scope="col">Anchor 3</th><th scope="col">Anchor 4</th><th scope="col" aria-label="Separator"></th><th scope="col" className="formula-cell">Alex</th><th scope="col" className="formula-cell">Taylor</th></tr></thead>
+                  <table className="sheet-table grading-example" aria-label={`Example Grading sheet for ${EXAMPLE_COMPONENT.name}, out of ${EXAMPLE_COMPONENT.marks} marks`}>
+                    <colgroup>
+                      <col className="example-criterion-column" /><col className="example-number-column" /><col className="example-number-column" />
+                      {EXAMPLE_COMPONENT.ranges.map((_, index) => <col className="example-anchor-column" key={index} />)}
+                      <col className="example-number-column" />
+                      {EXAMPLE_STUDENTS.map(student => <col className="example-score-column" key={student.id} />)}
+                    </colgroup>
+                    <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col">Marks</th>
+                      {EXAMPLE_COMPONENT.ranges.map((_, index) => <th scope="col" key={index}>Anchor {index + 1}</th>)}
+                      <th scope="col" aria-label="Separator"></th>
+                      {EXAMPLE_STUDENTS.map(student => <th scope="col" className="formula-cell" key={student.id}>{student.name}</th>)}
+                    </tr></thead>
                     <tbody>
-                      <tr className="example-component"><th scope="row">Research</th><td></td><td>40</td><td>31-40</td><td>21-30</td><td>11-20</td><td>0-10</td><td></td><td></td><td></td></tr>
-                      <tr><th scope="row">Evidence</th><td>1</td><td></td><td>Strong evidence</td><td>Moderate evidence</td><td>Weak evidence</td><td>Little or no evidence</td><td></td><td>32</td><td>28</td></tr>
-                      <tr><th scope="row">Analysis</th><td>2</td><td></td><td>Thorough, well-supported analysis</td><td>Sound analysis</td><td>Limited analysis</td><td>Little or no analysis</td><td></td><td>36</td><td>32</td></tr>
-                      <tr><td colSpan={10}>Insert new criteria above this row</td></tr>
-                      <tr className="example-total"><th scope="row">Research total</th><td></td><td className="formula-cell">40</td><td></td><td></td><td></td><td></td><td></td><td className="formula-cell">34.67</td><td className="formula-cell">30.67</td></tr>
+                      <tr className="example-component"><th scope="row">{EXAMPLE_COMPONENT.name}</th><td></td><td>{EXAMPLE_COMPONENT.marks}</td>
+                        {EXAMPLE_COMPONENT.ranges.map((range, index) => <td key={index}>{range.label}</td>)}<td></td>
+                        {EXAMPLE_STUDENTS.map(student => <td key={student.id}></td>)}
+                      </tr>
+                      {EXAMPLE_COMPONENT.items.map((item, index) => <tr key={item.name}>
+                        <th scope="row">{item.name}</th><td>{item.weight}</td><td></td>
+                        {item.anchors.map((anchor, anchorIndex) => <td key={anchorIndex}>{anchor}</td>)}<td></td>
+                        {EXAMPLE_STUDENTS.map(student => <td key={student.id}>{exampleScore(student, index)}</td>)}
+                      </tr>)}
+                      <tr><td colSpan={4 + EXAMPLE_COMPONENT.ranges.length + EXAMPLE_STUDENTS.length}>Insert new criteria above this row</td></tr>
+                      <tr className="example-total"><th scope="row">{EXAMPLE_COMPONENT.name} total</th><td></td><td className="formula-cell">{EXAMPLE_COMPONENT.marks}</td>
+                        {EXAMPLE_COMPONENT.ranges.map((_, index) => <td key={index}></td>)}<td></td>
+                        {EXAMPLE_STUDENTS.map(student => <td className="formula-cell" key={student.id}>{exampleTotal(student)}</td>)}
+                      </tr>
                     </tbody>
                   </table>
                   <div className="sheet-tabs"><span>Students</span><span className="selected-tab">Grading</span></div>
