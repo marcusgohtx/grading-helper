@@ -1,4 +1,19 @@
-# vinext-starter
+# grading-helper
+
+Create a plain Excel grading workbook from weighted criteria and positional scoring anchors.
+
+- [Live site](https://grading-helper.marcusgohtx.chatgpt.site)
+- [Rubric syntax and workbook behavior](README-PROTOTYPE.md)
+- [QA coverage and commands](qa/README.md)
+- [Maintenance skill](skills/grading-helper-maintenance/SKILL.md)
+
+## Test and contribute
+
+Install with `npm ci`, then run `npm test`. On Windows with Excel installed this also checks actual calculations and inserted rows. Use `npm.cmd test -- --require-excel` when native verification is required; portable-only runs explicitly report Excel as skipped. See the QA guide for focused TDD runs and coverage limits.
+
+The maintenance skill is versioned in this repository. Copy its folder into your Codex skills directory to make it discoverable, or ask your agent to read its SKILL.md directly. GitHub pushes do not automatically deploy the live Sites application.
+
+## Runtime notes
 
 A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
 
